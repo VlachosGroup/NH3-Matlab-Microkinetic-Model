@@ -20,7 +20,7 @@ function [ ds ] = ammonia( t,y )
 %   [s(9),ds(9)]    NH3
 %   [s(10),ds(10)]   * (Vacant site)
 %
-global kf kb Stoic_surf Stoic_gas Stoic T T_pulse T_orig P SDEN trun
+global kf kb Stoic_surf Stoic_gas Stoic T T_pulse T_orig P SDEN
 Stoic_surf = [ 1  0  0  0  0  0  0  0  0 -1;...
               -1  2  0  0  0  0  0  0  0 -1;...
                0  0  2  0  0  0  0  0  0 -2;...
@@ -38,6 +38,7 @@ Stoic_gas =  [ 0  0  0  0  0  0 -1  0  0  0;...
 Stoic = Stoic_surf + Stoic_gas;
 y(10) = SDEN - (sum(y(2:6)));
 T = sin(pulstran(t-floor(t/10)*10,[0:2:10],'tripuls',0.01).^2*pi/2)*(T_pulse-T_orig)+T_orig;
+%T = T_orig - ((t/5e5)^(1/3)*273);
 % Kinetic rate constants
 [kf,kb]=amm_kinetics(T,T_orig,P,y,Stoic,Stoic_surf,Stoic_gas);  % Obtain kinetics rate constants
 %
