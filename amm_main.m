@@ -18,9 +18,9 @@ Y_H2  = X_H2 /(X_H2+X_N2+X_NH3);
 Y_N2  = X_N2 /(X_H2+X_N2+X_NH3);
 Y_NH3 = X_NH3/(X_H2+X_N2+X_NH3);
 V = 1;
-Q_in = 3.76e-3;
+Q_in = 3.76e-2;
 SDEN = 3.1331e-10;             % Catalyst surface site density (moles/cm2)
-abyv = 1000;
+abyv = 500;
 cat_surf = abyv*V;
 MW_H = 1.007970;
 MW_N = 14.006700;
@@ -50,7 +50,7 @@ T_pulse = 875;
 %s(:,10) = SDEN - sum(s(:,2:6),2);
 %save('grw2.mat','t','s','-v7.3');
 %clear t s;
-T_pulse = 675;
+T_pulse = 600;
 tspan = 1e6;%tspan1b - tspan;
 [t,s] = ode15s(@ammonia,[0 tspan],s0,options2);
 s0 = s(end,1:9);
@@ -88,6 +88,13 @@ legend('N_2','H_2','NH_3')
 %xlim([tspan1 tspan2]);
 fs=sr{pfrnodes}(end,7:9)./sum(sr{pfrnodes}(end,7:9),2)
 figure(2)
-plot(t,s(:,[1 3 4 10])./(SDEN),'-')
-legend('\theta_*','H_*','NH_{3*}','N_{2*}')
-s(end,[1:6 10])/(SDEN)
+hold on
+for pfr=1:pfrnodes
+plot(tr{pfr},sr{pfr}(:,1)./(SDEN),'b')
+plot(tr{pfr},sr{pfr}(:,3)./(SDEN),'r')
+plot(tr{pfr},sr{pfr}(:,4)./(SDEN),'g')
+plot(tr{pfr},sr{pfr}(:,10)./(SDEN),'m')
+end
+hold off
+legend('N_{2*}','H_*','NH_{3*}','\theta_*')
+sr{pfrnodes}(end,[1:6 10])/(SDEN)
