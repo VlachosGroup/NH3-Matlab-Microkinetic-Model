@@ -1,11 +1,11 @@
 clear
-global T T_ref T_pulse T_orig beta P V Q_in c_N2 c_H2 c_NH3 SDEN abyv c_tot pp Stoic_surf Stoic_gas Stoic
-T_orig = 673;
+global T T_ref T_pulse T_orig beta P V Q_in c_N2 c_H2 c_NH3 SDEN abyv c_tot Stoic_surf Stoic_gas Stoic MWON Isobaric
+T_orig = 550;
 T = T_orig;
-T_pulse = 800;
 P = 1;
-pp=[0,P];
 beta = 1;
+MWON = 0;   %0 = Off (S); 1 = On (S/(1-S/2))
+Isobaric = 1;
 tspan1 = 7473;
 tspan1a = 14873;
 tspan1b = 27000;
@@ -18,10 +18,9 @@ Y_H2  = X_H2 /(X_H2+X_N2+X_NH3);
 Y_N2  = X_N2 /(X_H2+X_N2+X_NH3);
 Y_NH3 = X_NH3/(X_H2+X_N2+X_NH3);
 V = 1;
-Q_in = 0;%3.76e-1;
+Q_in = 3.76e-3;     % 0 = Batch Reactor,  Any other value = CSTR
 SDEN = 4.4385e-10;             % Catalyst surface site density (moles/cm2)
-abyv = 3000;
-cat_surf = abyv*V;
+abyv = 1000;
 MW_H = 1.007970;
 MW_N = 14.006700;
 R = 82.057338;  %(cm3 atm/K mol)
@@ -47,9 +46,9 @@ Stoic_gas =  [ 0  0  0  0  0  0 -1  0  0  0;...
                0  0  0  0  0  0  0  0  0  0;...
                0  0  0  0  0  0  0  0 -1  0];
 Stoic = Stoic_surf + Stoic_gas;
-options0 = odeset ('MaxStep',0.001,'NonNegative',[1 2 3 4 5 6 7 8 9],'BDF','on','InitialStep',1e-10,'Stats','off','AbsTol',1e-14,'RelTol',1e-12);
-options1 = odeset ('MaxStep',0.0001,'NonNegative',[1 2 3 4 5 6 7 8 9],'BDF','on','InitialStep',1e-5,'Stats','off','AbsTol',1e-12,'RelTol',1e-10);
-options2 = odeset ('NonNegative',[1 2 3 4 5 6 7 8 9],'BDF','on','Stats','off','AbsTol',1e-12,'RelTol',1e-10);
+options0 = odeset ('MaxStep',0.001,'NonNegative',[1 2 3 4 5 6 7 8 9],'BDF','off','InitialStep',1e-5,'Stats','off','AbsTol',1e-14,'RelTol',1e-12);
+options1 = odeset ('MaxStep',0.0001,'NonNegative',[1 2 3 4 5 6 7 8 9],'BDF','off','InitialStep',1e-5,'Stats','off','AbsTol',1e-14,'RelTol',1e-12);
+options2 = odeset ('NonNegative',[1 2 3 4 5 6 7 8 9],'InitialStep',1e-10,'BDF','off','Stats','off','AbsTol',1e-14,'RelTol',1e-12);
 tic;
 %tspan = tspan1;
 s0 = [0 0 0 0 0 0 c_N2 c_H2 c_NH3];
@@ -67,8 +66,8 @@ T_pulse = 875;
 %clear t s;
 T_pulse = T_orig;
 tspan = max(floor(5/Q_in),5);%tspan1b - tspan;
-%[t,s] = ode15s(@ammonia,[0 tspan],s0,options2);
-%s0 = s(end,1:9);
+[t,s] = ode23tb(@ammonia,[0 tspan],s0,options2);
+s0 = s(end,1:9);
 %s(:,10) = SDEN - sum(s(:,2:6),2);
 %save('grw3.mat','t','s','-v7.3');
 clear t s;
@@ -76,8 +75,8 @@ tstart = 0;
 pfrnodes = 1;
 for pfr=1:pfrnodes;
 T_pulse = 800;
-tspan = 1500;%max(floor(3/Q_in),2);
-[t,s] = ode15s(@ammonia,[tstart tspan+tstart],s0,options2);
+tspan = max(floor(3/Q_in)+.5,2);
+[t,s] = ode23tb(@ammonia,[tstart tspan+tstart],s0,options0);
 s0 = zeros(1,9);
 s0(7:9) = s(end,7:9);
 s(:,10) = SDEN - sum(s(:,1:6),2);
@@ -107,10 +106,11 @@ hold on
 for pfr=1:pfrnodes
 plot(tr{pfr},sr{pfr}(:,1)./(SDEN),'b')
 plot(tr{pfr},sr{pfr}(:,2)./(SDEN),'r')
-plot(tr{pfr},sr{pfr}(:,3)./(SDEN),'k')
-plot(tr{pfr},sr{pfr}(:,4)./(SDEN),'g')
+plot(tr{pfr},sr{pfr}(:,3)./(SDEN),'c')
+plot(tr{pfr},sr{pfr}(:,5)./(SDEN),'k')
+plot(tr{pfr},sr{pfr}(:,6)./(SDEN),'g')
 plot(tr{pfr},sr{pfr}(:,10)./(SDEN),'m')
 end
 hold off
-legend('N_{2*}','N_*','H_*','NH_{3*}','\theta_*')
+legend('N_{2*}','N_*','H_*','NH_{2*}','NH','\theta_*')
 sr{pfrnodes}(end,[1:6 10])/(SDEN)

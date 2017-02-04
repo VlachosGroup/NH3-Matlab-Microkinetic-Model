@@ -20,17 +20,17 @@ function [ ds ] = ammonia( t,y )
 %   [s(9),ds(9)]    NH3
 %   [s(10),ds(10)]   * (Vacant site)
 %
-global kf kb T T_orig V Q_in c_N2 c_H2 c_NH3 SDEN
+global kf kb T T_orig T_pulse V Q_in c_N2 c_H2 c_NH3 SDEN Isobaric
 
-y(10) = SDEN - (sum(y(1:6)));
+y(10) = SDEN - sum(y(1:6));
 % Kinetic rate constants
-%T = sin(pulstran(t-floor(t/10)*10,[0:0.1:10],'tripuls',0.001).^2*pi/2)*(T_pulse-T_orig)+T_orig;
+T = sin(pulstran(t-floor(t/10)*10,[0:1:10],'tripuls',0.01).^2*pi/2)*(T_pulse-T_orig)+T_orig;
 [kf,kb]=amm_kinetics(T,T_orig,y);  % Obtain kinetics rate constants
 R = 82.057338;  %(cm3 atm/K mol)
 Q_r = (kb(1)*y(1) - kf(1)*y(7)*y(10) +...
      kb(3)*y(3)^2 - kf(3)*y(8)*y(10)^2 +...
      kb(7)*y(4) - kf(7)*y(9)*y(10))/sum(y(7:9));
-Q_out = 0;%Q_in + Q_r;
+Q_out = Q_in + Q_r*Isobaric;
 %
 % Reaction network
 %
