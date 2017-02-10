@@ -8,8 +8,8 @@ function [ HORT,SOR,GORT ] = amm_thermo( T,Zero_BE )
 % Output:
 %   K(i)  Equilibrium constant for reaction i
 %
-R_e = 1.987e-3;            % Gas constant, (kcal/mol K)
-% N2s
+global R_e
+
 T_h = 1000;
 T_c = 500;
 T_l = 100;
@@ -55,13 +55,6 @@ else
     A = A_l;
 end
 A(:,6) =  A(:,6) - [Zero_BE(7:12);0;0;0;0];
-rxn = ['N2+RU(S1)<=>RU(B)+N2(S1)            ';...
-       'N2(S1)+RU(S1)<=>RU(B)+2N(S1)        ';...
-       'H2+2RU(S1)<=>2RU(B)+2H(S1)          ';...
-       'RU(S1)+NH(S1)<=>N(S1)+H(S1)+RU(B)   ';...
-       'RU(S1)+NH2(S1)<=>NH(S1)+H(S1)+RU(B) ';...
-       'RU(S1)+NH3(S1)<=>NH2(S1)+H(S1)+RU(B)';...
-       'NH3+RU(S1)<=>RU(B)+NH3(S1)          '];
 T_H = [1 T/2 T^2/3 T^3/4 T^4/5 1/T];
 T_S = [log(T) T T^2/2 T^3/3 T^4/4 1];
 HORT = T_H*A(:,1:6)';

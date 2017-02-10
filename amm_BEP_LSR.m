@@ -1,8 +1,8 @@
-function [ Ea,Zero_BE,omega ] = amm_BEP_LSR( T,Stoic )
+function [ Ea,Zero_BE,omega ] = amm_BEP_LSR( T,Stoic,Ea )
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
-R_e = 1.987e-3;            % Gas constant, (kcal/mol K)
+global R_e
 
 %% Liner Scaling Relationships
 
@@ -65,10 +65,10 @@ b(5) = 23.69;   %NH3 dehydrogenation
 [HORT,SOR,GORT] = amm_thermo(T,Zero_BE);
 HRXN = HORT * Stoic'*T*R_e;
 %Ea(1) = max(m(2) * HRXN(2) + b(2),-HRXN(2));
-Ea(1) = m(2) * HRXN(2) + b(2);
-Ea(2) = m(5) * HRXN(4) + b(5);
-Ea(3) = m(4) * HRXN(5) + b(4);
-Ea(4) = m(3) * HRXN(6) + b(3);
+Ea(2) = m(2) * HRXN(2) + b(2);
+Ea(4) = m(5) * HRXN(4) + b(5);
+Ea(5) = m(4) * HRXN(5) + b(4);
+Ea(6) = m(3) * HRXN(6) + b(3);
 
 omega_default = 0.5;
 omega(1)  = omega_default;   % N2(gas)      +  Ru(Terrace) <--> N2(Terrace)

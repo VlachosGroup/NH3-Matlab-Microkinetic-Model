@@ -20,7 +20,7 @@ function [ k_cov ] = amm_coverage( s )
 %     s(9)             NH3
 %     s(10)             * (Vacant site)
 %
-global SDEN
+global SDEN abyv
 Effects = zeros(10);
 %                      N*          H*         NH3*        NH2*         NH*
 Effects(2:6,2:6) = [-47.0179	-17.7545  	-25.1631    -20.7620    -48.7823 ;...
@@ -30,6 +30,6 @@ Effects(2:6,2:6) = [-47.0179	-17.7545  	-25.1631    -20.7620    -48.7823 ;...
                     -48.7823	-18.4208	-26.1074   	-21.5412	-50.6129 ];
            
 start_cov = 0.0;
-k_cov = (Effects*(max(s/SDEN-start_cov,0)/(1.0-start_cov)));
+k_cov = (Effects*(max(s/(SDEN*abyv)-start_cov,0)/(1.0-start_cov)));
 end
 
