@@ -1,18 +1,33 @@
-function [ HORT,SOR,GORT ] = amm_thermo( T,Zero_BE )
-% Ammonia Synthesis Microkinetic Model
-%  Thermodynamic equilibrium constants
+function [ HORT,SOR,GORT ] = amm_thermo( T,A6_LSR,A6_Cov )
+%%          -------------------------------------------------
+%                        NH3  Micro-kinetic model
+%                         Vlachos Research Group
+%                 Chemical and Biomolecular Egineering
+%                         University of Delaware
+%
+%             Gerhard R Wittreich, P.E.  (February 10, 2017)
+%           --------------------------------------------------
+%
+%      amm_thermo.m   : NASA polynomials provides enthalpy and entropy
+%
+%      requires: 
+%                amm_kinetics.m : Provides forward and reverse rate constants
 %
 % Input:
 %   T     Temperature
+%   A6_LSR  LSR correction to NASA polynomial A6 coefficient
+%   A6_COV  Coverage correction to NASA polynomial A6 coefficient
 %
 % Output:
-%   K(i)  Equilibrium constant for reaction i
+%   HORT   Dimmensionless enthalpy
+%   SOR    Dimmensionless entropy
+%   GORT   Dimmensionless Gibb's free energy
 %
-global R_e
 
 T_h = 1000;
 T_c = 500;
 T_l = 100;
+
 A_N2s1_h  = [-3.0389116E-01  3.8896493E-02 -1.1844826E-04  1.6547503E-07 -8.5383479E-11  1.0461048E+03  2.5490376E-01];
 A_N2s1_l  = [ 3.8398741E+00  2.9098818E-03 -2.2772005E-06  1.4089311E-09 -4.5833977E-13  6.6483854E+02 -1.6514162E+01];
 A_Ns1_h   = [ 1.2514381E-01 -8.5266996E-03  1.2722803E-04 -3.4767398E-07  2.9447935E-10  5.235518E+03  -2.2025331E-01];
@@ -49,12 +64,14 @@ A_v_l = [0 0 0 0 0 0 0];
 %A_l = [A_N2s1_l;A_Ns1_l;A_Hs1_l;A_NH3s1_l;A_NH2s1_l;A_NHs1_l;A_N2_l;A_H2_l;A_NH3_l;A_v_l];
 A_h = [A_N2s2_h;A_Ns2_h;A_Hs2_h;A_NH3s2_h;A_NH2s2_h;A_NHs2_h;A_N2_h;A_H2_h;A_NH3_h;A_v_h];
 A_l = [A_N2s2_l;A_Ns2_l;A_Hs2_l;A_NH3s2_l;A_NH2s2_l;A_NHs2_l;A_N2_l;A_H2_l;A_NH3_l;A_v_l];
+
 if T>T_c
     A = A_h;
 else
     A = A_l;
 end
-A(:,6) =  A(:,6) - [Zero_BE(7:12);0;0;0;0];
+A6_Correction = A6_LSR + A6_Cov;
+A(:,6) =  A(:,6) - [A6_Correction(7:12);0;0;0;0];
 T_H = [1 T/2 T^2/3 T^3/4 T^4/5 1/T];
 T_S = [log(T) T T^2/2 T^3/3 T^4/4 1];
 HORT = T_H*A(:,1:6)';

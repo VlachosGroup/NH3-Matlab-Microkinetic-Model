@@ -1,4 +1,4 @@
-function [ k_cov ] = amm_coverage( s )
+function [ A6_Cov ] = amm_coverage( s )
 % Ammonia Synthesis Microkinetic Model
 %  Kinetic rate constants
 %
@@ -20,7 +20,7 @@ function [ k_cov ] = amm_coverage( s )
 %     s(9)             NH3
 %     s(10)             * (Vacant site)
 %
-global SDEN abyv
+global SDEN_2 abyv R_e
 Effects = zeros(10);
 %                      N*          H*         NH3*        NH2*         NH*
 Effects(2:6,2:6) = [-47.0179	-17.7545  	-25.1631    -20.7620    -48.7823 ;...
@@ -29,7 +29,8 @@ Effects(2:6,2:6) = [-47.0179	-17.7545  	-25.1631    -20.7620    -48.7823 ;...
                     -20.7620	-7.8400     -11.1115	-9.1681 	-21.5412 ;...
                     -48.7823	-18.4208	-26.1074   	-21.5412	-50.6129 ];
            
-start_cov = 0.0;
-k_cov = (Effects*(max(s/(SDEN*abyv)-start_cov,0)/(1.0-start_cov)));
+start_cov = 0;
+k_cov = (Effects*(max(s/(SDEN_2*abyv)-start_cov,0)/(1.0-start_cov)));
+A6_Cov = [0;k_cov(2:6);0;k_cov(2:6)]/R_e;
 end
 

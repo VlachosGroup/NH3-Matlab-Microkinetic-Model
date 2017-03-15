@@ -1,4 +1,4 @@
-function [ Ea,Zero_BE,omega ] = amm_BEP_LSR( T,Stoic,Ea )
+function [ Ea,A6_BEP,Q ] = amm_BEP_LSR( T,Stoic,Ea,s )
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -10,7 +10,7 @@ global R_e
 
 Q_ref = 102.35;  % N binding energy on reference metal [kcal/mol]
 
-Q_target = 133.8; % N binding energy
+Q_target = 134.21; % N binding energy
 
 % ALPHAi LSR slopes
 alpha(1)  = 0.62036;  %  N2  [Terrace]
@@ -41,8 +41,8 @@ Qi_ref(11) = 63.9298;  %  NH2 [Step]
 Qi_ref(12) = 91.8554;  %  NH  [Step]
 
 Q = Qi_ref + alpha * (Q_target - Q_ref);
-Zero_BE = (alpha * (Q_target - Q_ref))'/R_e;
-
+A6_BEP = (alpha * (Q_target - Q_ref))'/R_e;
+%
 %% Bronsted-Evans-Polanyi Relationships for activation barriers from Hrxn
 
 %  (Ea)=m(deltaHrxn)+b
@@ -62,30 +62,12 @@ b(3) = 23.23;   %NH dehydrogenation
 b(4) = 19.78;   %NH2 dehydrogenation
 b(5) = 23.69;   %NH3 dehydrogenation
 
-[HORT,SOR,GORT] = amm_thermo(T,Zero_BE);
+A6_Cov = amm_coverage(s);
+[HORT,~,~] = amm_thermo(T,A6_BEP,A6_Cov);
 HRXN = HORT * Stoic'*T*R_e;
-%Ea(1) = max(m(2) * HRXN(2) + b(2),-HRXN(2));
 Ea(2) = m(2) * HRXN(2) + b(2);
 Ea(4) = m(5) * HRXN(4) + b(5);
 Ea(5) = m(4) * HRXN(5) + b(4);
 Ea(6) = m(3) * HRXN(6) + b(3);
-
-omega_default = 0.5;
-omega(1)  = omega_default;   % N2(gas)      +  Ru(Terrace) <--> N2(Terrace)
-omega(2)  = m(1);            % N2(Terrace)  +  Ru(Terrace) <--> 2N(Terrace)
-omega(3)  = omega_default;   % H2(Terrace)  + 2Ru(Terrace) <--> 2H(Terrace)
-omega(4)  = m(3);            % NH3(Terrace) +  Ru(Terrace) <--> NH2(Terrace) + H(Terrace)
-omega(5)  = m(4);            % NH2(Terrace) +  Ru(Terrace) <--> NH(Terrace)  + H(Terrace)
-omega(6)  = m(5);            % NH(Terrace)  +  Ru(Terrace) <--> N(Terrace)   + H(Terrace)
-omega(7)  = omega_default;   % NH3(gas)     +  Ru(Terrace) <--> NH3(Terrace)
-omega(8)  = omega_default;   % N2(gas)   +  Ru(Step) <--> N2(Step)
-omega(9)  = m(2);            % N2(Step)  +  Ru(Step) <--> 2N(Step)
-omega(10) = omega_default;   % H2(Step)  + 2Ru(Step) <--> 2H(Step)
-omega(11) = m(3);            % NH3(Step) +  Ru(Step) <--> NH2(Step) + H(Step)
-omega(12) = m(4);            % NH2(Step) +  Ru(Step) <--> NH(Step)  + H(Step)
-omega(13) = m(5);            % NH(Step)  +  Ru(Step) <--> N(Step)   + H(Step)
-omega(14) = omega_default;   % NH3(gas)  +  Ru(Step) <--> NH3(Step)
-omega = omega';
-
 end
 
