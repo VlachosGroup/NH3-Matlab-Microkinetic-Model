@@ -63,7 +63,7 @@ b(4) = 19.78;   %NH2 dehydrogenation
 b(5) = 23.69;   %NH3 dehydrogenation
 
 A6_Cov = amm_coverage(s);
-[HORT,~,~] = amm_thermo(T,A6_BEP,A6_Cov);
+[~,HORT,~,~] = amm_thermo(T,A6_BEP,A6_Cov);
 HRXN = HORT * Stoic'*T*R_e;
 Ea(2) = m(2) * HRXN(2) + b(2);
 Ea(4) = m(5) * HRXN(4) + b(5);

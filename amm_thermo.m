@@ -1,4 +1,4 @@
-function [ HORT,SOR,GORT ] = amm_thermo( T,A6_LSR,A6_Cov )
+function [ CpOR,HORT,SOR,GORT ] = amm_thermo( T,A6_LSR,A6_Cov )
 %%          -------------------------------------------------
 %                        NH3  Micro-kinetic model
 %                         Vlachos Research Group
@@ -72,8 +72,10 @@ else
 end
 A6_Correction = A6_LSR + A6_Cov;
 A(:,6) =  A(:,6) - [A6_Correction(7:12);0;0;0;0];
-T_H = [1 T/2 T^2/3 T^3/4 T^4/5 1/T];
-T_S = [log(T) T T^2/2 T^3/3 T^4/4 1];
+T_Cp = [1 T T^2 T^3 T^4];
+T_H  = [1 T/2 T^2/3 T^3/4 T^4/5 1/T];
+T_S  = [log(T) T T^2/2 T^3/3 T^4/4 1];
+CpOR = T_Cp*A(:,1:5)';
 HORT = T_H*A(:,1:6)';
 SOR  = T_S*A(:,[1:5 7])';
 GORT = HORT - SOR;

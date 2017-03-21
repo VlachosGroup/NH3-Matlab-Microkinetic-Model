@@ -30,7 +30,7 @@ Effects(2:6,2:6) = [-47.0179	-17.7545  	-25.1631    -20.7620    -48.7823 ;...
                     -48.7823	-18.4208	-26.1074   	-21.5412	-50.6129 ];
            
 start_cov = 0;
-k_cov = (Effects*(max(s/(SDEN_2*abyv)-start_cov,0)/(1.0-start_cov)));
+k_cov = (Effects*(max(s(1:10)/(SDEN_2*abyv)-start_cov,0)/(1.0-start_cov)));
 A6_Cov = [0;k_cov(2:6);0;k_cov(2:6)]/R_e;
 end
 
