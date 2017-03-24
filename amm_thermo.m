@@ -23,7 +23,7 @@ function [ CpOR,HORT,SOR,GORT ] = amm_thermo( T,A6_LSR,A6_Cov )
 %   SOR    Dimmensionless entropy
 %   GORT   Dimmensionless Gibb's free energy
 %
-
+global R_e
 T_h = 1000;
 T_c = 500;
 T_l = 100;
@@ -73,8 +73,15 @@ end
 A6_Correction = A6_LSR + A6_Cov;
 A(:,6) =  A(:,6) - [A6_Correction(7:12);0;0;0;0];
 T_Cp = [1 T T^2 T^3 T^4];
+%T_NIST_Cp = [1 T/1000 (T/1000)^2 (T/1000)^3 1/(T/1000)^2];
 T_H  = [1 T/2 T^2/3 T^3/4 T^4/5 1/T];
 T_S  = [log(T) T T^2/2 T^3/3 T^4/4 1];
+%NIST_H2    = [7.903006 -2.715922 2.732508 -0.662733 -0.037896 ];
+%NIST_N2    = [4.662006  4.75312 -2.055099  0.327386  0.1261   ];
+%NIST_NH3   = [4.779071 11.8956  -3.67495   0.45917   0.045214 ];
+%NIST = [NIST_N2;NIST_H2;NIST_NH3];
+%CpOR = T_NIST_Cp*NIST'/1000/R_e;
+%CpOR = [0 0 0 0 0 0 CpOR 0];
 CpOR = T_Cp*A(:,1:5)';
 HORT = T_H*A(:,1:6)';
 SOR  = T_S*A(:,[1:5 7])';
