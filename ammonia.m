@@ -35,18 +35,17 @@ function [ ds ] = ammonia( t,s )
 %   [s(12),ds(12)]  Gas temperature
 %
 global kf kb T_orig T_pulse T_gas V Q_in c_N2 c_H2 c_NH3 Isobaric Moles_SiO2_Heated...
-       R_e Cp_SiO2_NIST pulse abyv q_constant q_pulse
+       R_e Cp_SiO2_NIST pulse abyv q_constant q_pulse T_func
 
-%T = T_orig;
-T = sin(pulstran(t-floor(t),[0:1:1],'tripuls',0.01).^2*pi/2)*(T_pulse-T_orig)+T_orig;
-%T = s(11);
 T_gas = s(12);
 h_cat = 1.19423e-7; % Catalyst heat transfer coefficient [kcal/cm2 s K]
 switch pulse
     case 0
     q=q_constant;
+    T = s(11);
     case 1
-    q = sin(pulstran(t-floor(t),[0:1:1],'tripuls',0.01).^2*pi/2)*q_pulse;
+%    q = sin(pulstran(t-floor(t),[0:1:1],'tripuls',0.01).^2*pi/2)*q_pulse;
+    T = T_func(t);
 end
 
 [kf,kb,HORT,CpOR]=amm_kinetics(T,T_gas,s);  % Obtain kinetics rate constants

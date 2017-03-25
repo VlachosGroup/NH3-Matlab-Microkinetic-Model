@@ -7,7 +7,7 @@
 %             Gerhard R Wittreich, P.E.  (February 10, 2017)
 %           --------------------------------------------------
 %
-%  Main program: 
+%  Main program:
 %      requires: ammonia.m      : Reaction ODE's and dynamical equations
 %                amm_kinetics.m : Provides forward and reverse rate constants
 %                amm_thermo.m   : NASA polynomials provides enthalpy and entropy
@@ -20,9 +20,9 @@ datetime
 %  Set key model parameters
 %
 global T T_ref T_pulse T_orig beta P V Q_in c_N2 c_H2 c_NH3 abyv ...
-       c_tot Stoic_surf Stoic_gas Stoic MWON Isobaric Ea A Stick R_e ...
-       R_k R MW_N2 MW_H2 MW_NH3 SDEN_1 SDEN_2 SDTOT Moles_SiO2_Heated...
-       Cp_SiO2_NIST pulse q_constant q_pulse
+    c_tot Stoic_surf Stoic_gas Stoic MWON Isobaric Ea A Stick R_e ...
+    R_k R MW_N2 MW_H2 MW_NH3 SDEN_1 SDEN_2 SDTOT Moles_SiO2_Heated...
+    Cp_SiO2_NIST pulse q_constant q_pulse T_func
 T_orig = 700;                   % Reactor bulk temperature [K]
 T = T_orig;                     % Initial catalyst temperature [K]
 T_gas = T_orig;                 % Initial gas temperature [K]
@@ -72,36 +72,36 @@ M_H2 = c_H2*V*MW_H2;            % Mass H2 in reactor [kg]
 M_N2 = c_N2*V*MW_N2;            % Mass N2 in reactor [kg]
 M_NH3 = c_NH3*V*MW_NH3;         % Mass NH3 in reactor [kg]
 Stoic_surf = [ 1  0  0  0  0  0  0  0  0 -1;... % Reaction
-              -1  2  0  0  0  0  0  0  0 -1;... %
-               0  0  2  0  0  0  0  0  0 -2;... % Surface
-               0  0  1 -1  1  0  0  0  0 -1;... %
-               0  0  1  0 -1  1  0  0  0 -1;... % Stoichiometry
-               0  1  1  0  0 -1  0  0  0 -1;... %
-               0  0  0  1  0  0  0  0  0 -1];   % ---
+    -1  2  0  0  0  0  0  0  0 -1;... %
+    0  0  2  0  0  0  0  0  0 -2;... % Surface
+    0  0  1 -1  1  0  0  0  0 -1;... %
+    0  0  1  0 -1  1  0  0  0 -1;... % Stoichiometry
+    0  1  1  0  0 -1  0  0  0 -1;... %
+    0  0  0  1  0  0  0  0  0 -1];   % ---
 Stoic_gas =  [ 0  0  0  0  0  0 -1  0  0  0;... % Reaction
-               0  0  0  0  0  0  0  0  0  0;... %
-               0  0  0  0  0  0  0 -1  0  0;... % Gas
-               0  0  0  0  0  0  0  0  0  0;... %
-               0  0  0  0  0  0  0  0  0  0;... % Stoichiometry
-               0  0  0  0  0  0  0  0  0  0;... %
-               0  0  0  0  0  0  0  0 -1  0];   % ---
+    0  0  0  0  0  0  0  0  0  0;... %
+    0  0  0  0  0  0  0 -1  0  0;... % Gas
+    0  0  0  0  0  0  0  0  0  0;... %
+    0  0  0  0  0  0  0  0  0  0;... % Stoichiometry
+    0  0  0  0  0  0  0  0  0  0;... %
+    0  0  0  0  0  0  0  0 -1  0];   % ---
 Stoic = Stoic_surf + Stoic_gas;                 % Total stoichiometry
 
 % ODE Solver options
 options0 = odeset ('MaxStep',0.003,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],...
-                   'BDF','on','InitialStep',1e-10,'Stats','off',...
-                   'AbsTol',1e-14,'RelTol',1e-12);
+    'BDF','on','InitialStep',1e-10,'Stats','off',...
+    'AbsTol',1e-14,'RelTol',1e-12);
 options1 = odeset ('MaxStep',0.0003,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],...
-                   'BDF','on','InitialStep',1e-10,'Stats','off',...
-                   'AbsTol',1e-14,'RelTol',1e-12);
+    'BDF','on','InitialStep',1e-10,'Stats','off',...
+    'AbsTol',1e-14,'RelTol',1e-12);
 options2 = odeset ('NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],'InitialStep',1e-10,...
-                   'BDF','on','Stats','off','AbsTol',1e-14,'RelTol',1e-12);
+    'BDF','on','Stats','off','AbsTol',1e-14,'RelTol',1e-12);
 tic;
 s0 = [0 0 0 0 0 0 c_N2 c_H2 c_NH3 SDEN_2*abyv T T]; % Initial species concentrations
 if ne(0,1)
     T_pulse = T_orig;
     pulse = 0;
-    tspan = 5.5;%max(floor(5*V/Q_in),5);
+    tspan = 5.05;%max(floor(5*V/Q_in),5);
     sol = ode15s(@ammonia,[0 tspan],s0,options2);
     s0 = sol.y(:,end)';
 end
@@ -110,8 +110,10 @@ pfrnodes = 1;           % PFR capability is not implemented.  Must be 1.
 for pfr=1:pfrnodes
     %T=700;
     T_pulse = 840;
-    pulse = 0;
+    pulse = 1;
     tspan2 = 100;%max(floor(3*V/Q_in)+.5,2);
+    t = [tspan:0.0001:tspan2];
+    T_func = griddedInterpolant(t,sin(pulstran(t-floor(t),[0:0.1:1],'tripuls',0.01).^2*pi/2)*(T_pulse-T_orig)+T_orig);
     sol2 = odextend(sol,@ammonia,tspan+tspan2,s0,options0);
     %s(:,10) = (SDEN_2*abyv) - sum(s(:,1:6),2);
     tr{pfr}=sol2.x';
@@ -122,9 +124,9 @@ save('ammonia_temp.mat')
 figure(1)
 hold on
 for pfr=1:pfrnodes
-plot(tr{pfr},sr{pfr}(:,7)./sum(sr{pfr}(:,7:9),2),'b')
-plot(tr{pfr},sr{pfr}(:,8)./sum(sr{pfr}(:,7:9),2),'r')
-plot(tr{pfr},sr{pfr}(:,9)./sum(sr{pfr}(:,7:9),2),'g')
+    plot(tr{pfr},sr{pfr}(:,7)./sum(sr{pfr}(:,7:9),2),'b')
+    plot(tr{pfr},sr{pfr}(:,8)./sum(sr{pfr}(:,7:9),2),'r')
+    plot(tr{pfr},sr{pfr}(:,9)./sum(sr{pfr}(:,7:9),2),'g')
 end
 hold off
 xlim([0 tspan+tspan2])
@@ -165,13 +167,13 @@ fprintf('%8.6f   %8.6f   %8.6f\n',fs)
 figure(2)
 hold on
 for pfr=1:pfrnodes
-plot(tr{pfr},sr{pfr}(:,1) ./(SDEN_2*abyv),'-b')
-plot(tr{pfr},sr{pfr}(:,2) ./(SDEN_2*abyv),'-r')
-plot(tr{pfr},sr{pfr}(:,3) ./(SDEN_2*abyv),'-c')
-plot(tr{pfr},sr{pfr}(:,4) ./(SDEN_2*abyv),'-','Color',[0 .45 .74])
-plot(tr{pfr},sr{pfr}(:,5) ./(SDEN_2*abyv),'-k')
-plot(tr{pfr},sr{pfr}(:,6) ./(SDEN_2*abyv),'-g')
-plot(tr{pfr},sr{pfr}(:,10)./(SDEN_2*abyv),'-m')
+    plot(tr{pfr},sr{pfr}(:,1) ./(SDEN_2*abyv),'-b')
+    plot(tr{pfr},sr{pfr}(:,2) ./(SDEN_2*abyv),'-r')
+    plot(tr{pfr},sr{pfr}(:,3) ./(SDEN_2*abyv),'-c')
+    plot(tr{pfr},sr{pfr}(:,4) ./(SDEN_2*abyv),'-','Color',[0 .45 .74])
+    plot(tr{pfr},sr{pfr}(:,5) ./(SDEN_2*abyv),'-k')
+    plot(tr{pfr},sr{pfr}(:,6) ./(SDEN_2*abyv),'-g')
+    plot(tr{pfr},sr{pfr}(:,10)./(SDEN_2*abyv),'-m')
 end
 hold off
 xlim([0 tspan+tspan2])
@@ -191,7 +193,7 @@ hold off
 figure(3)
 hold on
 for pfr=1:pfrnodes
-plot(tr{pfr},sr{pfr}(:,11),'--r')
+    plot(tr{pfr},sr{pfr}(:,11),'--r')
 end
 title('Catalyst Surface Temperature')
 xlim([0 tspan+tspan2])
@@ -201,7 +203,7 @@ hold off
 figure(4)
 hold on
 for pfr=1:pfrnodes
-plot(tr{pfr},sr{pfr}(:,12),'--r')
+    plot(tr{pfr},sr{pfr}(:,12),'--r')
 end
 title('Gas Temperature')
 xlim([0 tspan+tspan2])
