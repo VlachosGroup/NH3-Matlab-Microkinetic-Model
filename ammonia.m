@@ -35,17 +35,18 @@ function [ ds ] = ammonia( t,s )
 %   [s(12),ds(12)]  Gas temperature
 %
 global kf kb T_orig T_pulse T_gas V Q_in c_N2 c_H2 c_NH3 Isobaric Moles_SiO2_Heated...
-       R_e Cp_SiO2_NIST pulse abyv q_constant q_pulse T_func
+       R_e Cp_SiO2_NIST pulse abyv q_constant q_pulse T_func RR
 
 T_gas = s(12);
 h_cat = 1.19423e-7; % Catalyst heat transfer coefficient [kcal/cm2 s K]
 switch pulse
     case 0
-    q=q_constant;
+    q = q_constant;
     T = s(11);
     case 1
-%    q = sin(pulstran(t-floor(t),[0:1:1],'tripuls',0.01).^2*pi/2)*q_pulse;
-    T = T_func(t);
+    q = sin(pulstran(t-floor(t),[0:1:1],'tripuls',0.01).^2*pi/2)*q_pulse;
+    %T = T_func(t);
+    T = s(11);
 end
 
 [kf,kb,HORT,CpOR]=amm_kinetics(T,T_gas,s);  % Obtain kinetics rate constants
@@ -59,6 +60,27 @@ Q_out = Q_in + Q_r*Isobaric;
 %
 % Reaction network
 %
+RR(1,2) = kf(1)*s(7)*s(10);
+RR(1,1) = kb(1)*s(1);
+RR(1,3) = RR(1,1) - RR(1,2);
+RR(2,2) = kf(2)*s(1)*s(10);
+RR(2,1) = kb(2)*s(2)^2;
+RR(2,3) = RR(2,1) - RR(2,2);
+RR(3,2) = kf(3)*s(8)*s(10)^2;
+RR(3,1) = kb(3)*s(3)^2;
+RR(3,3) = RR(3,1) - RR(3,2);
+RR(6,1) = kf(4)*s(4)*s(10);
+RR(6,2) = kb(4)*s(5)*s(3);
+RR(6,3) = RR(6,1) - RR(6,2);
+RR(5,1) = kf(5)*s(5)*s(10);
+RR(5,2) = kb(5)*s(6)*s(3);
+RR(5,3) = RR(5,1) - RR(5,2);
+RR(4,1) = kf(6)*s(6)*s(10);
+RR(4,2) = kb(6)*s(2)*s(3);
+RR(4,3) = RR(4,1) - RR(4,2);
+RR(7,1) = kf(7)*s(9)*s(10);
+RR(7,2) = kb(7)*s(4);
+RR(7,3) = RR(7,1) - RR(7,2);
 ds    = zeros(11,1);
 ds(1) = kf(1)*s(7)*s(10)         - kb(1)*s(1) + ...
         kb(2)*s(2)^2             - kf(2)*s(1)*s(10);             % dN2*/dt
@@ -93,8 +115,8 @@ ds(11)= 0;%(q + (HORT(1:10)*R_e*T)*ds(1:10)*V + ...
          %h_cat*abyv*V*(T_gas - T))/...
          %(Moles_SiO2_Heated*(Cp_SiO2_NIST*...
          %[1 T/1000 (T/1000)^2 (T/1000)^3 1/(T/1000)^2]'));        % dT_cat/dt
-ds(12)= (Q_out*R_e*T_orig*(s(7)*HORT_feed(7) + s(8)*HORT_feed(8) + s(9)*HORT_feed(9)) -...
-         Q_out*R_e*T_gas*(s(7)*HORT(7)      + s(8)*HORT(8)      + s(9)*HORT(9)) -...
-         h_cat*abyv*V*(T_gas - T))/...
-         (V*R_e*(s(7)*CpOR(7)+s(8)*CpOR(8)+s(9)*CpOR(9)));       % dT_gas/dt
+ds(12)= 0;%(Q_out*R_e*T_orig*(s(7)*HORT_feed(7) + s(8)*HORT_feed(8) + s(9)*HORT_feed(9)) -...
+         %Q_out*R_e*T_gas*(s(7)*HORT(7)      + s(8)*HORT(8)      + s(9)*HORT(9)) -...
+         %h_cat*abyv*V*(T_gas - T))/...
+         %(V*R_e*(s(7)*CpOR(7)+s(8)*CpOR(8)+s(9)*CpOR(9)));       % dT_gas/dt
 end

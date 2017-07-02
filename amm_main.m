@@ -22,13 +22,13 @@ datetime
 global T T_ref T_pulse T_orig beta P V Q_in c_N2 c_H2 c_NH3 abyv ...
     c_tot Stoic_surf Stoic_gas Stoic MWON Isobaric Ea A Stick R_e ...
     R_k R MW_N2 MW_H2 MW_NH3 SDEN_1 SDEN_2 SDTOT Moles_SiO2_Heated...
-    Cp_SiO2_NIST pulse q_constant q_pulse T_func
-T_orig = 700;                   % Reactor bulk temperature [K]
+    Cp_SiO2_NIST pulse q_constant q_pulse T_func RR Q_name
+T_orig = 800;                   % Reactor bulk temperature [K]
 T = T_orig;                     % Initial catalyst temperature [K]
 T_gas = T_orig;                 % Initial gas temperature [K]
-P = 1;                          % Reactor pressure [atm]
-q_constant = 0.00175;
-q_pulse = 0.3993071781697345;
+P = 1.0;                          % Reactor pressure [atm]
+q_constant = 0.0015;
+q_pulse = 0.281636169371400;
 beta = [0 1 0 1 1 1 0]';
 Ea   = [0 0 0 0 0 0 0]';
 A    = [1.16e18 2.05e19 1.06e20 8.38e19]';
@@ -36,20 +36,21 @@ Stick= [0.5 0.5 0.5]';
 MWON = 0;                       % Motz-Wise Correction: 0 = Off (S); 1 = On (S/(1-S/2))
 Isobaric = 1;                   % Isobaric Reactor (0=Isochoric, 1=Isobaric)
 T_ref = 1;                      % Reference Temperature [K]
-MW_H = 1.00797;                 %---
+MW_H = 1.00797;                 % ---
 MW_N = 14.0067;                 %
 MW_H2 = 2*MW_H;                 % Molecular mass [g/mol]
 MW_N2 = 2*MW_N;                 %
-MW_NH3 = MW_N + 3*MW_H;         %---
+MW_NH3 = MW_N + 3*MW_H;         % ---
 X_H2  = 0;                      %
 X_N2  = 0;                      % Initial mole fraction in reactor feed
 X_NH3 = 1;                      %
 Y_H2  = X_H2 /(X_H2+X_N2+X_NH3);% Mole fractions
 Y_N2  = X_N2 /(X_H2+X_N2+X_NH3);% normalized
 Y_NH3 = X_NH3/(X_H2+X_N2+X_NH3);% to 1
-abyv = 1500;                    % Catalyst loading (cm2 catalyst/cm3 reac volume)
-V = 10;                         % Reactor volume (cm3)
-Q_in = 10;                      % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
+abyv = 2800;                    % Catalyst loading (cm2 catalyst/cm3 reac volume)
+V = 0.3;                         % Reactor volume (cm3)
+Q_in = 200/60*T_orig/298.15/P;                       % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
+Q_in = 3;                       % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
 eps = 0.64;                     % Sphere packed volume
 Cat_Rad = 3/abyv;               %
 n_Cat = V*3/(4*pi*Cat_Rad^3);   %
@@ -91,17 +92,17 @@ Stoic = Stoic_surf + Stoic_gas;                 % Total stoichiometry
 options0 = odeset ('MaxStep',0.003,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],...
     'BDF','on','InitialStep',1e-10,'Stats','off',...
     'AbsTol',1e-14,'RelTol',1e-12);
-options1 = odeset ('MaxStep',0.0003,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],...
+options1 = odeset ('MaxStep',0.0001,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],...
     'BDF','on','InitialStep',1e-10,'Stats','off',...
     'AbsTol',1e-14,'RelTol',1e-12);
 options2 = odeset ('NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],'InitialStep',1e-10,...
     'BDF','on','Stats','off','AbsTol',1e-14,'RelTol',1e-12);
 tic;
-s0 = [0 0 0 0 0 0 c_N2 c_H2 c_NH3 SDEN_2*abyv T T]; % Initial species concentrations
+s0 = [0 0 0 0 0 0 c_N2 c_H2 c_NH3 SDEN_2*abyv T T_gas]; % Initial species concentrations
 if ne(0,1)
     T_pulse = T_orig;
     pulse = 0;
-    tspan = 5.05;%max(floor(5*V/Q_in),5);
+    tspan = max(floor(5*V/Q_in),5);
     sol = ode15s(@ammonia,[0 tspan],s0,options2);
     s0 = sol.y(:,end)';
 end
@@ -109,18 +110,18 @@ tstart = 0;
 pfrnodes = 1;           % PFR capability is not implemented.  Must be 1.
 for pfr=1:pfrnodes
     %T=700;
-    T_pulse = 840;
-    pulse = 1;
-    tspan2 = 100;%max(floor(3*V/Q_in)+.5,2);
-    t = [tspan:0.0001:tspan2];
-    T_func = griddedInterpolant(t,sin(pulstran(t-floor(t),[0:0.1:1],'tripuls',0.01).^2*pi/2)*(T_pulse-T_orig)+T_orig);
-    sol2 = odextend(sol,@ammonia,tspan+tspan2,s0,options0);
+    T_pulse = T_orig;
+    pulse = 0;
+    tspan2 = max(floor(3*V/Q_in)+.5,2);
+    t = [tspan:0.0001:tspan2+tspan+1];
+    T_func = griddedInterpolant(t,sin(pulstran(t/2-floor(t/2),[0:0.1:1],'tripuls',0.008).^3*pi/2)*(T_pulse-T_orig)+T_orig);
+    sol2 = odextend(sol,@ammonia,tspan+tspan2,s0,options2);
     %s(:,10) = (SDEN_2*abyv) - sum(s(:,1:6),2);
     tr{pfr}=sol2.x';
     sr{pfr}=sol2.y';
 end
 toc;
-save('ammonia_temp.mat')
+save('ammonia_temp_Ru_2sec.mat')
 figure(1)
 hold on
 for pfr=1:pfrnodes
@@ -150,9 +151,9 @@ switch pulse
         Tf_gas = trapz(tr{1}(find(tr{1}==tspan):end),sr{1}(find(tr{1}==tspan):end,12))/...
             (tr{1}(end)-tr{1}(find(tr{1}==tspan)));
 end
-H_conv = Energy/(V*c_NH3*NH3_Conv);
+H_conv = Energy/(Q_in*c_NH3*NH3_Conv);
 fprintf('\n----------------------------------------\n')
-fprintf('NH3 Conversion = %6.2f [%%]\n',NH3_Conv*100)
+fprintf('NH3 Conversion = %6.4f [%%]\n',NH3_Conv*100)
 fprintf('Conv Enthalpy  = %6.4f [kcal/mol]\n',H_conv)
 fprintf('Temperature (Feed)      = %7.4f [K]\n',T_orig)
 fprintf('Temperature (Catalyst)  = %7.4f [K]\n',Tf_cat)
@@ -193,7 +194,7 @@ hold off
 figure(3)
 hold on
 for pfr=1:pfrnodes
-    plot(tr{pfr},sr{pfr}(:,11),'--r')
+    plot(tr{pfr},sr{pfr}(:,11),'r')
 end
 title('Catalyst Surface Temperature')
 xlim([0 tspan+tspan2])
@@ -203,10 +204,31 @@ hold off
 figure(4)
 hold on
 for pfr=1:pfrnodes
-    plot(tr{pfr},sr{pfr}(:,12),'--r')
+    plot(tr{pfr},sr{pfr}(:,12),'r')
 end
 title('Gas Temperature')
 xlim([0 tspan+tspan2])
 xlabel('Time [sec]')
 ylabel('Temperature [K]')
 hold off
+figure(5)
+TOF = RR ./abyv ./(SDEN_1 + SDEN_2);
+BG = barh(TOF);
+set(BG(3),'DisplayName','Net','FaceColor','r');
+set(BG(2),'DisplayName','Reverse','FaceColor','y');
+set(BG(1),'DisplayName','Forward','FaceColor','b');
+set(gca,'Xscale','log', 'XMinorTick', 'off')
+set(gca,'yticklabel',{'N_2* \leftrightarrow N_2 + *';...
+                      '2N* \leftrightarrow N_2* + *';...
+                      '2H* \leftrightarrow H_2 + 2*';...
+                      'NH* + * \leftrightarrow N* + H*';...
+                      'NH_2* + * \leftrightarrow NH* + H*';...
+                      'NH_3* + * \leftrightarrow NH_2* + H*';...
+                      'NH_3 + * \leftrightarrow NH_3*'})
+xlabel('Turnover Frequency (TOF) [s^{-1}]')
+ylabel('Reaction Step')
+title({'Ammonia Decomposition', ['Forward and Reverse Reaction Rates at ' ...
+        num2str(sr{1}(end,12)) ' [K] on ' Q_name],['V_{Reactor} = ' ...
+        num2str(V) ' cm^3     Q_{Feed} = ' num2str(Q_in) ...
+        ' cm^3/s     \tau_{Reactor} = ' num2str(V/Q_in) ' seconds']})
+legend('Forward', 'Reverse', 'Net', 'Location', 'best')
