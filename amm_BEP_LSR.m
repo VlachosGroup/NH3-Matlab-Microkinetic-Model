@@ -13,8 +13,8 @@ Q_ref = 102.35;  % N binding energy on reference metal (Pt) [kcal/mol]
 %Q_target = 102.35; Q_name = 'Pt'; % N binding energy on Pt
 %Q_target = 110.00; Q_name = 'Ni'; % N binding energy on Ni
 %Q_target = 112.07; Q_name = 'Rh'; % N binding energy on Rh
-Q_target = 115.30; Q_name = 'Co'; % N binding energy on Co
-%Q_target = 134.21; Q_name = 'Ru'; % N binding energy on Ru
+%Q_target = 115.30; Q_name = 'Co'; % N binding energy on Co
+Q_target = 134.21; Q_name = 'Ru'; % N binding energy on Ru
 %Q_target = 136.75; Q_name = 'Fe'; % N binding energy on Fe
 %Q_target = 138.36; Q_name = 'Re'; % N binding energy on Re
 %Q_target = 154.18; Q_name = 'Mo'; % N binding energy on Mo

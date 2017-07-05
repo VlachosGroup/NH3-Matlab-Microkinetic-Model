@@ -1,3 +1,4 @@
+function [tr, sr, RR] = amm_main(T_in, Graph)
 %%          -------------------------------------------------
 %                        NH3  Micro-kinetic model
 %                         Vlachos Research Group
@@ -15,18 +16,18 @@
 %                amm_BEP_LSR.m  : Adjusts thermo data for target metal
 %                                 catalyst, provides Ea and omega for each reaction
 %%
-clear
-datetime
+%clear
+datetime,T_in
 %  Set key model parameters
 %
 global T T_ref T_pulse T_orig beta P V Q_in c_N2 c_H2 c_NH3 abyv ...
     c_tot Stoic_surf Stoic_gas Stoic MWON Isobaric Ea A Stick R_e ...
     R_k R MW_N2 MW_H2 MW_NH3 SDEN_1 SDEN_2 SDTOT Moles_SiO2_Heated...
     Cp_SiO2_NIST pulse q_constant q_pulse T_func RR Q_name
-T_orig = 800;                   % Reactor bulk temperature [K]
+T_orig = T_in;                   % Reactor bulk temperature [K]
 T = T_orig;                     % Initial catalyst temperature [K]
 T_gas = T_orig;                 % Initial gas temperature [K]
-P = 1.0;                          % Reactor pressure [atm]
+P = 1.0;                        % Reactor pressure [atm]
 q_constant = 0.0015;
 q_pulse = 0.281636169371400;
 beta = [0 1 0 1 1 1 0]';
@@ -47,10 +48,10 @@ X_NH3 = 1;                      %
 Y_H2  = X_H2 /(X_H2+X_N2+X_NH3);% Mole fractions
 Y_N2  = X_N2 /(X_H2+X_N2+X_NH3);% normalized
 Y_NH3 = X_NH3/(X_H2+X_N2+X_NH3);% to 1
-abyv = 2800;                    % Catalyst loading (cm2 catalyst/cm3 reac volume)
-V = 0.3;                         % Reactor volume (cm3)
-Q_in = 200/60*T_orig/298.15/P;                       % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
-Q_in = 3;                       % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
+abyv = 1500;                    % Catalyst loading (cm2 catalyst/cm3 reac volume)
+V = 1;                        % Reactor volume (cm3)
+Q_in = 145/60*T_orig/298.15/P;  % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
+Q_in = 10;                       % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
 eps = 0.64;                     % Sphere packed volume
 Cat_Rad = 3/abyv;               %
 n_Cat = V*3/(4*pi*Cat_Rad^3);   %
@@ -121,6 +122,7 @@ for pfr=1:pfrnodes
     sr{pfr}=sol2.y';
 end
 toc;
+if Graph
 save('ammonia_temp_Ru_2sec.mat')
 figure(1)
 hold on
@@ -232,3 +234,24 @@ title({'Ammonia Decomposition', ['Forward and Reverse Reaction Rates at ' ...
         num2str(V) ' cm^3     Q_{Feed} = ' num2str(Q_in) ...
         ' cm^3/s     \tau_{Reactor} = ' num2str(V/Q_in) ' seconds']})
 legend('Forward', 'Reverse', 'Net', 'Location', 'best')
+figure(6)
+PEI = RR(:,1)./(RR(:,1)+RR(:,2));
+plot(PEI,[1:length(PEI)],'o', 'MarkerFacecolor','b')
+hold on
+h=fill([0.45 0.45 0.55 0.55],[1 7 7 1],'y');
+set(h,'facealpha',.1,'linestyle','none');
+xlim([0,1])
+set(gca,'yticklabel',{'N_2* \leftrightarrow N_2 + *';...
+'2N* \leftrightarrow N_2* + *';...
+'2H* \leftrightarrow H_2 + 2*';...
+'NH* + * \leftrightarrow N* + H*';...
+'NH_2* + * \leftrightarrow NH* + H*';...
+'NH_3* + * \leftrightarrow NH_2* + H*';...
+'NH_3 + * \leftrightarrow NH_3*'})
+plot([0.45 0.45],[1,7],'--b')
+plot([0.55 0.55],[1,7],'--b')
+ylabel('Reaction Step')
+xlabel('Partial Equilibrium Index')
+hold off
+end
+end
