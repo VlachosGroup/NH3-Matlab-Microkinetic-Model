@@ -18,7 +18,7 @@ Q_target = 134.21; Q_name = 'Ru'; % N binding energy on Ru
 %Q_target = 136.75; Q_name = 'Fe'; % N binding energy on Fe
 %Q_target = 138.36; Q_name = 'Re'; % N binding energy on Re
 %Q_target = 154.18; Q_name = 'Mo'; % N binding energy on Mo
-%Q_target = 142; Q_name = 'Unk';
+%Q_target = 134.6595; Q_name = 'Unk';
 
 % ALPHAi LSR slopes
 alpha(1)  = 0.62036;  %  N2  [Terrace]

@@ -221,3 +221,8 @@ pip-log.txt
 *.fig
 *.mat
 *.asv
+*.txt
+*.emf
+*.png
+*.gif
+*.eps
