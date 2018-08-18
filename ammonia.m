@@ -123,7 +123,7 @@ ds(12)= 0;%(Q_in*R_e*T_orig*(c_N2*HORT_feed(7) + c_H2*HORT_feed(8) + c_NH3*HORT_
 %          Q_out*R_e*T_gas*(s(7)*HORT_gas(7) + s(8)*HORT_gas(8)  + s(9)*HORT_gas(9)) -...
 %          h_cat*surf_cat*V*(T_gas - T))/...
 %          (V*R_e*(s(7)*CpOR(7)+s(8)*CpOR(8)+s(9)*CpOR(9)));       % dT_gas/dt
-          if t>3
+          if t>6
               ff=0;
           end
 end
