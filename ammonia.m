@@ -35,8 +35,9 @@ function [ ds ] = ammonia( t,s )
 %   [s(11),ds(11)]  Catalyst surface temperature
 %   [s(12),ds(12)]  Gas temperature
 %
-global kf kb T_orig T_pulse T_gas V Q_in c_N2 c_H2 c_NH3 Isobaric Moles_SiO2_Heated...
-       R_e Cp_SiO2_NIST pulse abyv q_constant q_pulse T_func RR surf_cat
+global kf kb T_orig T_pulse T_gas V Q_in c_N2 c_H2 c_NH3 Isobaric...
+       Moles_SiO2_Heated R_e Cp_SiO2_NIST pulse abyv q_constant q_pulse...
+       T_func RR surf_cat
 
 T_gas = s(12);
 h_cat = 2.4e-6; % Catalyst heat transfer coefficient [kcal/cm2 s K]

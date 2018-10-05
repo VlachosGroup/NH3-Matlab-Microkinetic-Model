@@ -1,4 +1,4 @@
-function [ CpOR,HORT,SOR,GORT ] = amm_thermo( T,A6_LSR,A6_Cov )
+function [ CpOR,HORT,SOR,GORT ] = amm_thermo( T,A6_LSR,A6_Cov,A6_Strain)
 %%          -------------------------------------------------
 %                        NH3  Micro-kinetic model
 %                         Vlachos Research Group
@@ -23,7 +23,7 @@ function [ CpOR,HORT,SOR,GORT ] = amm_thermo( T,A6_LSR,A6_Cov )
 %   SOR    Dimmensionless entropy
 %   GORT   Dimmensionless Gibb's free energy
 %
-global R_e
+global R_e STYPE_TERRACE
 T_h = 1000;
 T_c = 500;
 T_l = 100;
@@ -61,18 +61,24 @@ A_NH3_h   = [ 4.36E+00      -6.15E-03       2.95E-05      -3.75E-08       1.74E-
 A_NH3_l   = [ 2.88E+00       4.6E-03       -1.61E-07      -7.1E-10        1.99E-13      -4.8297052E+03  5.47E+00     ];
 A_v_h = [0 0 0 0 0 0 0];
 A_v_l = [0 0 0 0 0 0 0];
-%A_h = [A_N2s1_h;A_Ns1_h;A_Hs1_h;A_NH3s1_h;A_NH2s1_h;A_NHs1_h;A_N2_h;A_H2_h;A_NH3_h;A_v_h];
-%A_l = [A_N2s1_l;A_Ns1_l;A_Hs1_l;A_NH3s1_l;A_NH2s1_l;A_NHs1_l;A_N2_l;A_H2_l;A_NH3_l;A_v_l];
-A_h = [A_N2s2_h;A_Ns2_h;A_Hs2_h;A_NH3s2_h;A_NH2s2_h;A_NHs2_h;A_N2_h;A_H2_h;A_NH3_h;A_v_h];
-A_l = [A_N2s2_l;A_Ns2_l;A_Hs2_l;A_NH3s2_l;A_NH2s2_l;A_NHs2_l;A_N2_l;A_H2_l;A_NH3_l;A_v_l];
-
+if STYPE_TERRACE
+    A_h = [A_N2s1_h;A_Ns1_h;A_Hs1_h;A_NH3s1_h;A_NH2s1_h;A_NHs1_h;A_N2_h;A_H2_h;A_NH3_h;A_v_h];
+    A_l = [A_N2s1_l;A_Ns1_l;A_Hs1_l;A_NH3s1_l;A_NH2s1_l;A_NHs1_l;A_N2_l;A_H2_l;A_NH3_l;A_v_l];
+else
+    A_h = [A_N2s2_h;A_Ns2_h;A_Hs2_h;A_NH3s2_h;A_NH2s2_h;A_NHs2_h;A_N2_h;A_H2_h;A_NH3_h;A_v_h];
+    A_l = [A_N2s2_l;A_Ns2_l;A_Hs2_l;A_NH3s2_l;A_NH2s2_l;A_NHs2_l;A_N2_l;A_H2_l;A_NH3_l;A_v_l];
+end
 if T>T_c
     A = A_h;
 else
     A = A_l;
 end
-A6_Correction = A6_LSR + A6_Cov;
-A(:,6) =  A(:,6) - [A6_Correction(7:12);0;0;0;0];
+A6_Correction = A6_LSR + A6_Cov + A6_Strain;
+if STYPE_TERRACE
+    A(:,6) =  A(:,6) - [A6_Correction(1:6);0;0;0;0];
+else
+    A(:,6) =  A(:,6) - [A6_Correction(7:12);0;0;0;0];
+end
 T_Cp = [1 T T^2 T^3 T^4];
 %T_NIST_Cp = [1 T/1000 (T/1000)^2 (T/1000)^3 1/(T/1000)^2];
 T_H  = [1 T/2 T^2/3 T^3/4 T^4/5 1/T];

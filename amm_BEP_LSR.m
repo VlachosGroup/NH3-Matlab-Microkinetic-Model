@@ -1,8 +1,8 @@
-function [ Ea,A6_BEP,Q ] = amm_BEP_LSR( T,Stoic,Ea,s )
+function [ Ea,A6_LSR,A6_Strain,Q ] = amm_BEP_LSR( T,Stoic,Ea,s,strain)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
-global R_e Q_name
+global R_e Q_name STYPE_TERRACE
 
 %% Liner Scaling Relationships
 
@@ -49,7 +49,24 @@ Qi_ref(11) = 63.9298;  %  NH2 [Step]
 Qi_ref(12) = 91.8554;  %  NH  [Step]
 
 Q = Qi_ref + alpha * (Q_target - Q_ref);
-A6_BEP = (alpha * (Q_target - Q_ref))'/R_e;
+A6_LSR = (alpha * (Q_target - Q_ref))'/R_e;
+
+%% Catalyst surface strain
+
+StrainCoef = [-0.04 -0.02 0.0 0.02 0.04];
+StrainN2  = [0.15 0.11 0.00 -0.13 -0.21]*23.05875998694585;
+StrainN   = [0.53 0.27 0.00 -0.30 -0.48]*23.05875998694585;
+StrainH   = [0.12 0.05 0.00 -0.07 -0.10]*23.05875998694585;
+StrainNH3 = [0.08 0.05 0.00 -0.11 -0.18]*23.05875998694585;
+StrainNH2 = [0.12 0.07 0.00 -0.09 -0.15]*23.05875998694585;
+StrainNH  = [0.26 0.14 0.00 -0.17 -0.27]*23.05875998694585;
+A6_Strain = zeros(12,1);
+A6_Strain(1)  = polyval(polyfit(StrainCoef,StrainN2,1), strain);
+A6_Strain(2)  = polyval(polyfit(StrainCoef,StrainN,1), strain);
+A6_Strain(3)  = polyval(polyfit(StrainCoef,StrainH,1), strain);
+A6_Strain(4)  = polyval(polyfit(StrainCoef,StrainNH3,1), strain);
+A6_Strain(5)  = polyval(polyfit(StrainCoef,StrainNH2,1), strain);
+A6_Strain(6)  = polyval(polyfit(StrainCoef,StrainNH,1), strain);
 %
 %% Bronsted-Evans-Polanyi Relationships for activation barriers from Hrxn
 
@@ -71,7 +88,7 @@ b(4) = 19.78;   %NH2 dehydrogenation
 b(5) = 23.69;   %NH3 dehydrogenation
 
 A6_Cov = amm_coverage(s);
-[~,HORT,~,~] = amm_thermo(T,A6_BEP,A6_Cov);
+[~,HORT,~,~] = amm_thermo(T,A6_LSR,A6_Cov,A6_Strain);
 HRXN = HORT * Stoic'*T*R_e;
 Ea(2) = m(2) * HRXN(2) + b(2);
 Ea(4) = m(5) * HRXN(4) + b(5);

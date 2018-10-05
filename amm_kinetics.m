@@ -26,9 +26,9 @@ function [ kf,kb,HORT,CpOR ] = amm_kinetics( T,T_gas,s )
 %%
 % Kinetic rate constants
 global abyv T_ref beta Stoic_gas Stoic MWON A Stick MW_N2 MW_H2...
-       MW_NH3 R_e R_k R Ea SDTOT
+       MW_NH3 R_e R_k R Ea SDTOT strain
 
-[Ea,A6_BEP,~] = amm_BEP_LSR(T,Stoic,Ea,s);
+[Ea,A6_LSR,A6_Strain,~] = amm_BEP_LSR(T,Stoic,Ea,s,strain);
 A6_Cov = amm_coverage(s);
 kf=zeros(7,1);
 
@@ -42,7 +42,7 @@ kf(5) = 1*A(3)*((T/T_ref)^beta(5))/abyv * exp(-Ea(5)/(R_e*T));                % 
 kf(6) = 1*A(4)*((T/T_ref)^beta(6))/abyv * exp(-Ea(6)/(R_e*T));                % NH(Step)  +  Ru(Step) <--> N(Step)   + H(Step)
 kf(7) = 1*(Stick(3)/(1-MWON*Stick(3)/2))/SDTOT*((T_gas/T_ref)^beta(7))* ...
         sqrt(R_k*T_gas/(2*pi*MW_NH3)) * exp(-Ea(7)/(R_e*T_gas));              % NH3(gas)  +  Ru(Step) <--> NH3(Step)
-[CpOR,HORT,SOR,~] = amm_thermo(T,A6_BEP,A6_Cov);
+[CpOR,HORT,SOR,~] = amm_thermo(T,A6_LSR,A6_Cov,A6_Strain);
 GORT = HORT - SOR;
 GORT_e = GORT * (Stoic)';
 Kp = exp(-GORT_e)';
