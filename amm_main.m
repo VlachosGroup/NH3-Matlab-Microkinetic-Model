@@ -50,7 +50,7 @@ X_NH3 = 1;                      %
 Y_H2  = X_H2 /(X_H2+X_N2+X_NH3);% Mole fractions
 Y_N2  = X_N2 /(X_H2+X_N2+X_NH3);% normalized
 Y_NH3 = X_NH3/(X_H2+X_N2+X_NH3);% to 1
-abyv = 1500;                    % Catalyst loading (cm2 catalyst/cm3 reac volume)
+abyv = 1500*10000;                    % Catalyst loading (cm2 catalyst/cm3 reac volume)
 V = 1.0;                        % Reactor volume (cm3)
 Q_in = 200/60*T_orig/298.15/P;  % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
 Q_in = 1;                       % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
@@ -66,7 +66,7 @@ Cp_SiO2_NIST = [-1.452341 60.15189 -77.6282 40.2869 0.000609]/1000;
 SDEN_1 = 2.1671e-09;            % Catalyst terrace site density (moles/cm2)
 SDEN_2 = 4.4385e-10;            % Catalyst step site density (moles/cm2)
 SDTOT = SDEN_1 + SDEN_2;        % Total catalyst site density (moles/cm2)
-STYPE_TERRACE = false;           % Set true for TERRACE and false for STEP
+STYPE_TERRACE = true;           % Set true for TERRACE and false for STEP
 strain = 0.0;                 % Catalyst structure strain
 R_e = 1.987e-3;                 % Gas constant, (kcal/mol K)
 R_k = 8.31451e7;                % Gas constant, (g cm2/mol K s)

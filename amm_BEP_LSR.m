@@ -61,12 +61,13 @@ StrainNH3 = [0.08 0.05 0.00 -0.11 -0.18]*23.05875998694585;
 StrainNH2 = [0.12 0.07 0.00 -0.09 -0.15]*23.05875998694585;
 StrainNH  = [0.26 0.14 0.00 -0.17 -0.27]*23.05875998694585;
 A6_Strain = zeros(12,1);
-A6_Strain(1)  = polyval(polyfit(StrainCoef,StrainN2,1), strain);
-A6_Strain(2)  = polyval(polyfit(StrainCoef,StrainN,1), strain);
-A6_Strain(3)  = polyval(polyfit(StrainCoef,StrainH,1), strain);
-A6_Strain(4)  = polyval(polyfit(StrainCoef,StrainNH3,1), strain);
-A6_Strain(5)  = polyval(polyfit(StrainCoef,StrainNH2,1), strain);
-A6_Strain(6)  = polyval(polyfit(StrainCoef,StrainNH,1), strain);
+A6_Strain(1)  = polyval(polyfit(StrainCoef,StrainN2,1), strain)*T;
+A6_Strain(2)  = polyval(polyfit(StrainCoef,StrainN,1), strain)*T;
+A6_Strain(3)  = polyval(polyfit(StrainCoef,StrainH,1), strain)*T;
+A6_Strain(4)  = polyval(polyfit(StrainCoef,StrainNH3,1), strain)*T;
+A6_Strain(5)  = polyval(polyfit(StrainCoef,StrainNH2,1), strain)*T;
+A6_Strain(6)  = polyval(polyfit(StrainCoef,StrainNH,1), strain)*T;
+A6_Strain(7:12) = A6_Strain(1:6);
 %
 %% Bronsted-Evans-Polanyi Relationships for activation barriers from Hrxn
 
