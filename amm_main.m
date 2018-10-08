@@ -24,7 +24,7 @@ global T T_ref T_pulse T_orig beta P V Q_in c_N2 c_H2 c_NH3 abyv ...
     c_tot Stoic_surf Stoic_gas Stoic MWON Isobaric Ea A Stick R_e ...
     R_k R MW_N2 MW_H2 MW_NH3 SDEN_1 SDEN_2 SDTOT Moles_SiO2_Heated...
     Cp_SiO2_NIST pulse q_constant q_pulse T_func RR Q_name surf_cat...
-    strain STYPE_TERRACE;
+    strain STYPE_TERRACE strain_pulse tspan
 T_orig = T_in;                   % Reactor bulk temperature [K]
 %Graph = 1;
 T = T_orig;                     % Initial catalyst temperature [K]
@@ -50,7 +50,7 @@ X_NH3 = 1;                      %
 Y_H2  = X_H2 /(X_H2+X_N2+X_NH3);% Mole fractions
 Y_N2  = X_N2 /(X_H2+X_N2+X_NH3);% normalized
 Y_NH3 = X_NH3/(X_H2+X_N2+X_NH3);% to 1
-abyv = 1500*10000;                    % Catalyst loading (cm2 catalyst/cm3 reac volume)
+abyv = 1500*10;                    % Catalyst loading (cm2 catalyst/cm3 reac volume)
 V = 1.0;                        % Reactor volume (cm3)
 Q_in = 200/60*T_orig/298.15/P;  % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
 Q_in = 1;                       % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
@@ -101,14 +101,15 @@ options0 = odeset ('MaxStep',0.001,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],..
 options1 = odeset ('MaxStep',0.0005,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],...
     'BDF','on','InitialStep',1e-6,'Stats','off',...
     'AbsTol',1e-14,'RelTol',1e-12);
-options2 = odeset ('NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],'InitialStep',1e-1,...
+options2 = odeset ('NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],'InitialStep',1e-6,...
     'BDF','on','Stats','off','AbsTol',1e-14,'RelTol',1e-12);
 tic;
 s0 = [0 0 0 0 0 0 c_N2 c_H2 c_NH3 SDEN_2*abyv T T_gas]; % Initial species concentrations
 if ne(0,1)
     T_pulse = T_orig;
     pulse = 0;
-    tspan = max(floor(3*V/Q_in),2);
+    strain_pulse = 0;
+    tspan = max(floor(1*V/Q_in),2);
     sol = ode15s(@ammonia,[0 tspan],s0,options2);
     s0 = sol.y(:,end)';
 end
@@ -118,6 +119,7 @@ for pfr=1:pfrnodes
     %T=700;
     T_pulse = T_orig;
     pulse = 0;
+    strain_pulse = 0;
     tspan2 = max(floor(1*V/Q_in),2);
     t = [tspan:0.0001:tspan2+tspan+1];
     sol2 = odextend(sol,@ammonia,tspan+tspan2,s0,options2);
@@ -147,7 +149,7 @@ switch pulse
 end
 Conv = NH3_Conv*100;
 if Graph
-%save('ammonia_temp_Ru_0.1sec_002.mat','-v7.3')
+%save('ammonia_strain_Ru_0.1sec_001.mat','-v7.3')
 figure(1)
 hold on
 for pfr=1:pfrnodes

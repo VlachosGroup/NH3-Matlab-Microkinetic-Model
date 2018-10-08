@@ -37,7 +37,7 @@ function [ ds ] = ammonia( t,s )
 %
 global kf kb T_orig T_pulse T_gas V Q_in c_N2 c_H2 c_NH3 Isobaric...
        Moles_SiO2_Heated R_e Cp_SiO2_NIST pulse abyv q_constant q_pulse...
-       T_func RR surf_cat
+       T_func RR surf_cat strain_pulse strain tspan
 
 T_gas = s(12);
 h_cat = 2.4e-6; % Catalyst heat transfer coefficient [kcal/cm2 s K]
@@ -50,7 +50,11 @@ switch pulse
     %T = T_func(t);
     T = s(11);
 end
-
+if strain_pulse
+    period = 0.1; % Pulse period [sec]
+    magnitude = 0.04; % Pulse amplitude
+    strain = sin(2*pi*(t-tspan)/period)*magnitude;
+end
 [kf,kb,HORT,CpOR]=amm_kinetics(T,T_gas,s);  % Obtain kinetics rate constants
 [~,~,HORT_feed,~]=amm_kinetics(T_orig,T_orig,s);
 [~,~,HORT_gas,~]=amm_kinetics(T_gas,T_orig,s);
