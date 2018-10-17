@@ -67,7 +67,7 @@ SDEN_1 = 2.1671e-09;            % Catalyst terrace site density (moles/cm2)
 SDEN_2 = 4.4385e-10;            % Catalyst step site density (moles/cm2)
 SDTOT = SDEN_1 + SDEN_2;        % Total catalyst site density (moles/cm2)
 STYPE_TERRACE = true;           % Set true for TERRACE and false for STEP
-strain = 0.0;                 % Catalyst structure strain
+strain = 0.0;                   % Catalyst structure strain
 R_e = 1.987e-3;                 % Gas constant, (kcal/mol K)
 R_k = 8.31451e7;                % Gas constant, (g cm2/mol K s)
 R = 82.057;                     % Gas constant, (cm3 atm/K mol)
@@ -105,24 +105,26 @@ options2 = odeset ('NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],'InitialStep',1e-6
     'BDF','on','Stats','off','AbsTol',1e-14,'RelTol',1e-12);
 tic;
 s0 = [0 0 0 0 0 0 c_N2 c_H2 c_NH3 SDEN_2*abyv T T_gas]; % Initial species concentrations
-if ne(0,1)
+if ne(0,0)
     T_pulse = T_orig;
     pulse = 0;
     strain_pulse = 0;
-    tspan = max(floor(1*V/Q_in),2);
+    tspan = max(floor(2*V/Q_in),2);
     sol = ode15s(@ammonia,[0 tspan],s0,options2);
     s0 = sol.y(:,end)';
+    save('ammonia_strain_Ru_750.mat','sol','tspan','s0','-v7.3')
 end
+load('ammonia_strain_Ru_750.mat')
 tstart = 0;
 pfrnodes = 1;           % PFR capability is not implemented.  Must be 1.
 for pfr=1:pfrnodes
     %T=700;
     T_pulse = T_orig;
     pulse = 0;
-    strain_pulse = 0;
+    strain_pulse = 1;
     tspan2 = max(floor(1*V/Q_in),2);
     t = [tspan:0.0001:tspan2+tspan+1];
-    sol2 = odextend(sol,@ammonia,tspan+tspan2,s0,options2);
+    sol2 = odextend(sol,@ammonia,tspan+tspan2,s0,options0);
     %s(:,10) = (SDEN_2*abyv) - sum(s(:,1:6),2);
     tr{pfr}=sol2.x';
     sr{pfr}=sol2.y';

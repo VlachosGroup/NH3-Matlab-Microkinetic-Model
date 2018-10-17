@@ -73,7 +73,7 @@ if T>T_c
 else
     A = A_l;
 end
-A6_Correction = A6_LSR + A6_Cov + A6_Strain;
+A6_Correction = A6_LSR + A6_Cov - A6_Strain;
 if STYPE_TERRACE
     A(:,6) =  A(:,6) - [A6_Correction(1:6);0;0;0;0];
 else
