@@ -91,7 +91,10 @@ b(5) = 23.69;   %NH3 dehydrogenation
 A6_Cov = amm_coverage(s);
 [~,HORT,~,~] = amm_thermo(T,A6_LSR,A6_Cov,A6_Strain);
 HRXN = HORT * Stoic'*T*R_e;
-Ea(2) = m(2) * HRXN(2) + b(2);
+if STYPE_TERRACE
+    Ea(2) = m(1) * HRXN(2) + b(1);
+else
+    Ea(2) = m(2) * HRXN(2) + b(2);
 Ea(4) = m(5) * HRXN(4) + b(5);
 Ea(5) = m(4) * HRXN(5) + b(4);
 Ea(6) = m(3) * HRXN(6) + b(3);
