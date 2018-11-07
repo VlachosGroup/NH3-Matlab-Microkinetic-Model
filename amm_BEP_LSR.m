@@ -52,7 +52,6 @@ Q = Qi_ref + alpha * (Q_target - Q_ref);
 A6_LSR = (alpha * (Q_target - Q_ref))'/R_e;
 
 %% Catalyst surface strain
-
 StrainCoef = [-0.04 -0.02 0.0 0.02 0.04];
 StrainN2  = [0.15 0.11 0.00 -0.13 -0.21]*23.05875998694585/R_e;
 StrainN   = [0.53 0.27 0.00 -0.30 -0.48]*23.05875998694585/R_e;
@@ -61,20 +60,21 @@ StrainNH3 = [0.08 0.05 0.00 -0.11 -0.18]*23.05875998694585/R_e;
 StrainNH2 = [0.12 0.07 0.00 -0.09 -0.15]*23.05875998694585/R_e;
 StrainNH  = [0.26 0.14 0.00 -0.17 -0.27]*23.05875998694585/R_e;
 A6_Strain = zeros(12,1);
-A6_Strain(1)  = polyval(polyfit(StrainCoef,StrainN2,1), strain);
-A6_Strain(2)  = polyval(polyfit(StrainCoef,StrainN,1), strain);
-A6_Strain(3)  = polyval(polyfit(StrainCoef,StrainH,1), strain);
-A6_Strain(4)  = polyval(polyfit(StrainCoef,StrainNH3,1), strain);
-A6_Strain(5)  = polyval(polyfit(StrainCoef,StrainNH2,1), strain);
-A6_Strain(6)  = polyval(polyfit(StrainCoef,StrainNH,1), strain);
-A6_Strain(7:12) = A6_Strain(1:6);
+if strain ~= 0
+    A6_Strain(1)  = polyval(polyfit(StrainCoef,StrainN2,1), strain);
+    A6_Strain(2)  = polyval(polyfit(StrainCoef,StrainN,1), strain);
+    A6_Strain(3)  = polyval(polyfit(StrainCoef,StrainH,1), strain);
+    A6_Strain(4)  = polyval(polyfit(StrainCoef,StrainNH3,1), strain);
+    A6_Strain(5)  = polyval(polyfit(StrainCoef,StrainNH2,1), strain);
+    A6_Strain(6)  = polyval(polyfit(StrainCoef,StrainNH,1), strain);
+end
 %
 %% Bronsted-Evans-Polanyi Relationships for activation barriers from Hrxn
 
 %  (Ea)=m(deltaHrxn)+b
 
 %  m coefficients
-m(1) = 0.681;  %N2 dissociation (Terrace)
+m(1) = 0.68;   %N2 dissociation (Terrace) [Orig 0.681]
 m(2) = 0.69;   %N2 dissociation (Step)
 m(3) = 0.29;   %NH dehydrogenation
 m(4) = 0.52;   %NH2 dehydrogenation
@@ -82,8 +82,8 @@ m(5) = 0.71;   %NH3 dehydrogenation
 
 %  b constant
 
-b(1) = 54.27;   %N2 dissociation (Terrace)
-b(2) = 40.42;   %N2 dissociation (Step)
+b(1) = 51.27;   %N2 dissociation (Terrace) [Orig 54.27]
+b(2) = 40.44;   %N2 dissociation (Step)
 b(3) = 23.23;   %NH dehydrogenation
 b(4) = 19.78;   %NH2 dehydrogenation
 b(5) = 23.69;   %NH3 dehydrogenation
@@ -95,6 +95,7 @@ if STYPE_TERRACE
     Ea(2) = m(1) * HRXN(2) + b(1);
 else
     Ea(2) = m(2) * HRXN(2) + b(2);
+end
 Ea(4) = m(5) * HRXN(4) + b(5);
 Ea(5) = m(4) * HRXN(5) + b(4);
 Ea(6) = m(3) * HRXN(6) + b(3);

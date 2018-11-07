@@ -40,20 +40,21 @@ global kf kb T_orig T_pulse T_gas V Q_in c_N2 c_H2 c_NH3 Isobaric...
        T_func RR surf_cat strain_pulse strain tspan
 
 T_gas = s(12);
-h_cat = 2.4e-6; % Catalyst heat transfer coefficient [kcal/cm2 s K]
-switch pulse
-    case 0
-    q = q_constant;
-    T = s(11);
-    case 1
-    q = sin(pulstran(t/2-floor(t/2),[0:1:1],'tripuls',0.002/2).^2*pi/2)*q_pulse;
-    %T = T_func(t);
-    T = s(11);
-end
+T = s(11);
+% h_cat = 2.4e-6; % Catalyst heat transfer coefficient [kcal/cm2 s K]
+% switch pulse
+%     case 0
+%     q = q_constant;
+%     T = s(11);
+%     case 1
+%     q = sin(pulstran(t/2-floor(t/2),[0:1:1],'tripuls',0.002/2).^2*pi/2)*q_pulse;
+%     %T = T_func(t);
+%     T = s(11);
+% end
 if strain_pulse
     period = 0.1; % Pulse period [sec]
     magnitude = 0.04; % Pulse amplitude
-    strain = sin(2*pi*(t-tspan)/period)*magnitude;
+    strain = sin(2*pi*(t-tspan)/period)*magnitude
 end
 [kf,kb,HORT,CpOR]=amm_kinetics(T,T_gas,s);  % Obtain kinetics rate constants
 [~,~,HORT_feed,~]=amm_kinetics(T_orig,T_orig,s);
@@ -128,7 +129,7 @@ ds(12)= 0;%(Q_in*R_e*T_orig*(c_N2*HORT_feed(7) + c_H2*HORT_feed(8) + c_NH3*HORT_
 %          Q_out*R_e*T_gas*(s(7)*HORT_gas(7) + s(8)*HORT_gas(8)  + s(9)*HORT_gas(9)) -...
 %          h_cat*surf_cat*V*(T_gas - T))/...
 %          (V*R_e*(s(7)*CpOR(7)+s(8)*CpOR(8)+s(9)*CpOR(9)));       % dT_gas/dt
-          if t>6
-              ff=0;
-          end
+%           if t>6
+%               ff=0;
+%           end
 end
