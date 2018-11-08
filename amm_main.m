@@ -102,17 +102,17 @@ Stoic_gas =  [ 0  0  0  0  0  0 -1  0  0  0;... % Reaction
 Stoic = Stoic_surf + Stoic_gas;                 % Total stoichiometry
 
 % ODE Solver options
-options0 = odeset ('MaxStep',0.001,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],...
+options0 = odeset ('MaxStep',0.001,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11],...
     'BDF','on','InitialStep',1e-6,'Stats','off',...
-    'AbsTol',1e-8,'RelTol',1e-6);
-options1 = odeset ('MaxStep',0.0005,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],...
+    'AbsTol',1e-7,'RelTol',1e-5);
+options1 = odeset ('MaxStep',0.0005,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11],...
     'BDF','on','InitialStep',1e-6,'Stats','off',...
     'AbsTol',1e-9,'RelTol',1e-7);
 options2 = odeset ('NonNegative',[1 2 3 4 5 6 7 8 9 10 11],...
     'BDF','off','InitialStep',1e-6,'Stats','off',...
-    'AbsTol',1e-8,'RelTol',1e-6);
+    'AbsTol',1e-7,'RelTol',1e-5);
 tic;
-s0 = [0 0 0 0 0 0 c_N2 c_H2 c_NH3 SDEN*abyv T T_gas]; % Initial species concentrations
+s0 = [0 0 0 0 0 0 c_N2 c_H2 c_NH3 T T_gas]; % Initial species concentrations
 if ne(0,1)
     T_pulse = T_orig;
     pulse = 0;
@@ -128,8 +128,8 @@ pfrnodes = 1;           % PFR capability is not implemented.  Must be 1.
 for pfr=1:pfrnodes
     T_pulse = T_orig;
     pulse = 0;
-    strain_pulse = 0;
-    tspan2 = 0;%max(floor(1*V/Q_in),2);
+    strain_pulse = 1;
+    tspan2 = 2;%max(floor(1*V/Q_in),2);
     sol2 = odextend(sol,@ammonia,tspan+tspan2,s0,options0);
     tr{pfr}=sol2.x';
     sr{pfr}=sol2.y';
@@ -140,8 +140,8 @@ switch pulse
         Energy = q_constant;
         NH3_MF = sr{1}(end,9)/sum(sr{1}(end,7:9));
         NH3_Conv = (1 - NH3_MF)/(1 + NH3_MF);
-        Tf_cat = sr{1}(end,11);
-        Tf_gas = sr{1}(end,12);
+        Tf_cat = sr{1}(end,10);
+        Tf_gas = sr{1}(end,11);
     case 1
         tt=linspace(500,700,20000000);
         Energy = trapz(tt,sin(pulstran(tt-floor(tt),[0:0.1:1],'tripuls',0.002).^2*pi/2)*q_pulse)/200;
@@ -194,7 +194,7 @@ for pfr=1:pfrnodes
     plot(tr{pfr},sr{pfr}(:,4) ./(SDEN*abyv),'-','Color',[0 .45 .74])
     plot(tr{pfr},sr{pfr}(:,5) ./(SDEN*abyv),'-k')
     plot(tr{pfr},sr{pfr}(:,6) ./(SDEN*abyv),'-g')
-    plot(tr{pfr},sr{pfr}(:,10)./(SDEN*abyv),'-m')
+    plot(tr{pfr},((SDEN*abyv)-sum(sr{pfr}(:,1:6),2))./(SDEN*abyv),'-m')
 end
 hold off
 xlim([0 tspan+tspan2])
@@ -202,7 +202,7 @@ ylim([0 1])
 xlabel('Time [sec]')
 ylabel('Surface coverage')
 legend('N_{2*}','N_*','H_*','NH_{3*}','NH_{2*}','NH','\theta_*')
-ss = sr{pfrnodes}(end,[1:6 10])/(SDEN*abyv);
+ss = [sr{pfrnodes}(end,[1:6]) ((SDEN*abyv)-sum(sr{pfr}(end,1:6)))]/(SDEN*abyv);
 fprintf('--------------------------------------------------------------------------\n')
 fprintf('                             Surface Species\n')
 fprintf('--------------------------------------------------------------------------\n')
@@ -214,7 +214,7 @@ hold off
 figure(3)
 hold on
 for pfr=1:pfrnodes
-    plot(tr{pfr},sr{pfr}(:,11),'r')
+    plot(tr{pfr},sr{pfr}(:,10),'r')
 end
 title('Catalyst Surface Temperature')
 xlim([0 tspan+tspan2])
@@ -224,7 +224,7 @@ hold off
 figure(4)
 hold on
 for pfr=1:pfrnodes
-    plot(tr{pfr},sr{pfr}(:,12),'r')
+    plot(tr{pfr},sr{pfr}(:,11),'r')
 end
 title('Gas Temperature')
 xlim([0 tspan+tspan2])
@@ -248,7 +248,7 @@ set(gca,'yticklabel',{'N_2* \leftrightarrow N_2 + *';...
 xlabel('Turnover Frequency (TOF) [s^{-1}]')
 ylabel('Reaction Step')
 title({'Ammonia Decomposition', ['Forward and Reverse Reaction Rates at ' ...
-        num2str(sr{1}(end,12)) ' [K] on ' Q_name],['V_{Reactor} = ' ...
+        num2str(sr{1}(end,11)) ' [K] on ' Q_name],['V_{Reactor} = ' ...
         num2str(V) ' cm^3     Q_{Feed} = ' num2str(Q_in) ...
         ' cm^3/s     \tau_{Reactor} = ' num2str(V/Q_in) ' seconds']})
 legend('Forward', 'Reverse', 'Net', 'Location', 'best')
