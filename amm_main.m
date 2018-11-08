@@ -49,7 +49,7 @@ X_NH3 = 1;                      %
 Y_H2  = X_H2 /(X_H2+X_N2+X_NH3);% Mole fractions
 Y_N2  = X_N2 /(X_H2+X_N2+X_NH3);% normalized
 Y_NH3 = X_NH3/(X_H2+X_N2+X_NH3);% to 1
-abyv = 15000.;                 % Catalyst loading (cm2 catalyst/cm3 reac volume)
+abyv = 1500.;                 % Catalyst loading (cm2 catalyst/cm3 reac volume)
 V = 1.0;                        % Reactor volume (cm3)
 %Q_in = 1.0*T_orig/298.15/P;     % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
 Q_in = 1.0;                     % 0 = Batch Reactor,  Any other value = CSTR [cm3/s]
@@ -67,7 +67,7 @@ SDEN_2 = 4.4385e-10;            % Catalyst step site density (moles/cm2)
 SDTOT = SDEN_1 + SDEN_2;        % Total catalyst site density (moles/cm2)
 STYPE_TERRACE = true;           % Set true for TERRACE and false for STEP
 if STYPE_TERRACE
-    A    = [2.38e17 4.23e18 2.18e19 1.72e19]' * 10; % Terrace Sites
+    A    = [2.38e17 4.23e18 2.18e19 1.72e19]' * 1; % Terrace Sites
     SDEN = SDEN_1;
 else
     A    = [1.16e19 2.05e19 1.06e20 8.38e19]';       % Step Sites
@@ -104,13 +104,13 @@ Stoic = Stoic_surf + Stoic_gas;                 % Total stoichiometry
 % ODE Solver options
 options0 = odeset ('MaxStep',0.001,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],...
     'BDF','on','InitialStep',1e-6,'Stats','off',...
-    'AbsTol',1e-12,'RelTol',1e-10);
+    'AbsTol',1e-8,'RelTol',1e-6);
 options1 = odeset ('MaxStep',0.0005,'NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],...
     'BDF','on','InitialStep',1e-6,'Stats','off',...
-    'AbsTol',1e-14,'RelTol',1e-12);
-options2 = odeset ('NonNegative',[1 2 3 4 5 6 7 8 9 10 11 12],...
+    'AbsTol',1e-9,'RelTol',1e-7);
+options2 = odeset ('NonNegative',[1 2 3 4 5 6 7 8 9 10 11],...
     'BDF','off','InitialStep',1e-6,'Stats','off',...
-    'AbsTol',1e-14,'RelTol',1e-12);
+    'AbsTol',1e-8,'RelTol',1e-6);
 tic;
 s0 = [0 0 0 0 0 0 c_N2 c_H2 c_NH3 SDEN*abyv T T_gas]; % Initial species concentrations
 if ne(0,1)
@@ -120,7 +120,7 @@ if ne(0,1)
     tspan = 10;%max(floor(1*V/Q_in),2);
     sol = ode15s(@ammonia,[0 tspan],s0,options2);
     s0 = sol.y(:,end)';
-    save('ammonia_decomp_Ru_750.mat','sol','tspan','s0','-v7.3')
+    %save('ammonia_decomp_Ru_750.mat','sol','tspan','s0','-v7.3')
 end
 %load('ammonia_decomp_Ru_750.mat')
 tstart = 0;
@@ -128,8 +128,8 @@ pfrnodes = 1;           % PFR capability is not implemented.  Must be 1.
 for pfr=1:pfrnodes
     T_pulse = T_orig;
     pulse = 0;
-    strain_pulse = 1;
-    tspan2 = 5;%max(floor(1*V/Q_in),2);
+    strain_pulse = 0;
+    tspan2 = 0;%max(floor(1*V/Q_in),2);
     sol2 = odextend(sol,@ammonia,tspan+tspan2,s0,options0);
     tr{pfr}=sol2.x';
     sr{pfr}=sol2.y';
@@ -156,7 +156,7 @@ switch pulse
 end
 Conv = NH3_Conv*100;
 if Graph
-%save('ammonia_strain_Ru_0.1sec_001.mat','-v7.3')
+%save('ammonia_strain_Ru_0.1sec_002.mat','-v7.3')
 figure(1)
 hold on
 for pfr=1:pfrnodes
